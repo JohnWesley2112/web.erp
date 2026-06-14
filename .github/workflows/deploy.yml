@@ -13,6 +13,19 @@ jobs:
             - name: Checkout Code
               uses: actions/checkout@v4
 
+            # --- DIAGNOSTIC STEP ---
+            # This checks if GitHub is passing your secrets to the runner.
+            - name: Verify Secret Availability
+              run: |
+                  if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ] || [ -z "${{ secrets.DROPLET_IP }}" ]; then
+                    echo "❌ ERROR: GitHub Secrets are returning NULL to this runner."
+                    echo "Please ensure you are pushing directly to the main repo (not a fork)"
+                    echo "and that these secrets are not locked inside an Environment."
+                    exit 1
+                  else
+                    echo "✅ SUCCESS: Secrets are correctly loaded by the runner."
+                  fi
+
             - name: Set up Node.js
               uses: actions/setup-node@v4
               with:
