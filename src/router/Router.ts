@@ -17,39 +17,44 @@ const Home = Loadable(lazy(() => import("../views/home/Home")));
 const Error = Loadable(lazy(() => import("../views/error/Error")));
 
 const Router: any = [
-  {
-    path: "/",
-    element: createElement(FullLayout),
-    children: [
-      { path: "/", element: createElement(Navigate, { to: "/home" }) },
-      {
-        path: "home",
-        element: createElement(Home),
-      },
+    {
+        path: "/",
+        element: createElement(FullLayout),
+        children: [
+            { path: "/", element: createElement(Navigate, { to: "/home" }) },
+            {
+                path: "home",
+                element: createElement(Home),
+            },
 
-      { path: "*", element: createElement(Navigate, { to: "/error/404" }) },
-    ],
-  },
-  {
-    path: "/",
-    element: createElement(BlankLayout),
-    children: [
-      {
-        path: "error/404",
-        element: createElement(Error),
-      },
-      {
-        path: "login",
-        element: createElement(Login),
-      },
-      {
-        path: "signup",
-        element: createElement(Signup),
-      },
-    ],
-  },
+            {
+                path: "*",
+                element: createElement(Navigate, { to: "/error/404" }),
+            },
+        ],
+    },
+    {
+        path: "/",
+        element: createElement(BlankLayout),
+        children: [
+            {
+                path: "error/404",
+                element: createElement(Error),
+            },
+            {
+                path: "login",
+                element: createElement(Login),
+            },
+            {
+                path: "signup",
+                element: createElement(Signup),
+            },
+        ],
+    },
 ];
 
-const router = createBrowserRouter(Router);
+const router = createBrowserRouter(Router, {
+    basename: "/erp",
+});
 
 export default router;
