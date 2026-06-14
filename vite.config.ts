@@ -7,49 +7,53 @@ import type { Plugin } from "esbuild";
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  resolve: {
-    alias: {
-      src: resolve(__dirname, "src"),
+    base: "/erp/",
+    resolve: {
+        alias: {
+            src: resolve(__dirname, "src"),
+        },
     },
-  },
 
-  esbuild: {
-    loader: "tsx",
-    include: /src\/.*\.[tj]sx?$/,
-    exclude: [],
-  },
-
-  optimizeDeps: {
-    esbuildOptions: {
-      loader: {
-        ".js": "jsx",
-        ".ts": "ts",
-        ".tsx": "tsx",
-      },
-
-      plugins: [
-        {
-          name: "load-ts-files-as-tsx",
-
-          setup(build) {
-            build.onLoad({ filter: /src\\.*\.[tj]sx?$/ }, async (args) => ({
-              loader: args.path.endsWith(".tsx")
-                ? "tsx"
-                : args.path.endsWith(".ts")
-                  ? "ts"
-                  : "jsx",
-
-              contents: await fs.readFile(args.path, "utf8"),
-            }));
-          },
-        } as Plugin,
-      ],
+    esbuild: {
+        loader: "tsx",
+        include: /src\/.*\.[tj]sx?$/,
+        exclude: [],
     },
-  },
 
-  server: {
-    host: true,
-  },
+    optimizeDeps: {
+        esbuildOptions: {
+            loader: {
+                ".js": "jsx",
+                ".ts": "ts",
+                ".tsx": "tsx",
+            },
 
-  plugins: [svgr(), react()],
+            plugins: [
+                {
+                    name: "load-ts-files-as-tsx",
+
+                    setup(build) {
+                        build.onLoad(
+                            { filter: /src\\.*\.[tj]sx?$/ },
+                            async (args) => ({
+                                loader: args.path.endsWith(".tsx")
+                                    ? "tsx"
+                                    : args.path.endsWith(".ts")
+                                      ? "ts"
+                                      : "jsx",
+
+                                contents: await fs.readFile(args.path, "utf8"),
+                            }),
+                        );
+                    },
+                } as Plugin,
+            ],
+        },
+    },
+
+    server: {
+        host: true,
+    },
+
+    plugins: [svgr(), react()],
 });
