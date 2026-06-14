@@ -1,62 +1,68 @@
 name: Deploy Vite ERP to DigitalOcean
 
 on:
-    push:
-        branches:
-            - main # Triggers the deploy when you push to the main branch
+  push:
+    branches:
+      - main # Triggers the deploy when you push to the main branch
 
 jobs:
-    build-and-deploy:
-        runs-on: ubuntu-latest
+  build-and-deploy:
+    runs-on: ubuntu-latest
 
-        steps:
-            - name: Checkout Code
-              uses: actions/checkout@v4
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
-            # --- DIAGNOSTIC STEP ---
-            # This checks if GitHub is passing your secrets to the runner.
-            - name: Verify Secret Availability
-              run: |
-                  if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ] || [ -z "${{ secrets.DROPLET_IP }}" ]; then
-                    echo "❌ ERROR: GitHub Secrets are returning NULL to this runner."
-                    echo "Please ensure you are pushing directly to the main repo (not a fork)"
-                    echo "and that these secrets are not locked inside an Environment."
-                    exit 1
-                  else
-                    echo "✅ SUCCESS: Secrets are correctly loaded by the runner."
-                  fi
+      # --- FIXED NATIVE DIAGNOSTIC STEP ---
+      # This checks if GitHub natively has the keys instead of relying on bash interpolation
+      - name: Verify Secret Availability
+        if: ${{ env.SSH_PRIVATE_KEY == '' || env.DROPLET_IP == '' }}
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          DROPLET_IP: ${{ secrets.DROPLET_IP }}
+        run: |
+          echo "❌ ERROR: GitHub Secrets are evaluated as missing or null."
+          echo "Please double-check your repository settings configuration."
+          exit 1
 
-            - name: Set up Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: 20
-                  cache: "npm"
+      - name: Secrets Loaded Confirmation
+        if: ${{ env.SSH_PRIVATE_KEY != '' && env.DROPLET_IP != '' }}
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          DROPLET_IP: ${{ secrets.DROPLET_IP }}
+        run: echo "✅ SUCCESS: Secrets are securely loaded by the runner engine."
 
-            - name: Install Dependencies
-              run: npm ci --legacy-peer-deps
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
 
-            - name: Build Application
-              run: npm run build
+      - name: Install Dependencies
+        run: npm ci --legacy-peer-deps
 
-            - name: Deploy to DigitalOcean Droplet via SFTP
-              uses: appleboy/scp-action@v0.1.7
-              with:
-                  host: ${{ secrets.DROPLET_IP }}
-                  username: root
-                  key: ${{ secrets.SSH_PRIVATE_KEY }}
-                  port: 22
-                  source: "dist/*"
-                  target: "/var/www/web.erp"
-                  strip_components: 1 # Flattens files directly into web.erp instead of making a /dist folder
+      - name: Build Application
+        run: npm run build
 
-            - name: Reset Permissions & Reload Nginx
-              uses: appleboy/ssh-action@v1.0.3
-              with:
-                  host: ${{ secrets.DROPLET_IP }}
-                  username: root
-                  key: ${{ secrets.SSH_PRIVATE_KEY }}
-                  port: 22
-                  script: |
-                      sudo chown -R www-data:www-data /var/www/web.erp
-                      sudo chmod -R 755 /var/www/web.erp
-                      sudo systemctl reload nginx
+      - name: Deploy to DigitalOcean Droplet via SFTP
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.DROPLET_IP }}
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          source: "dist/*"
+          target: "/var/www/web.erp"
+          strip_components: 1 # Flattens files directly into web.erp instead of making a /dist folder
+
+      - name: Reset Permissions & Reload Nginx
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DROPLET_IP }}
+          username: root
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          script: |
+            sudo chown -R www-data:www-data /var/www/web.erp
+            sudo chmod -R 755 /var/www/web.erp
+            sudo systemctl reload nginx
