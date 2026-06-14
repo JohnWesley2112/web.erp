@@ -8,83 +8,97 @@ import NavCollapse from './NavCollapse';
 import NavGroup from './NavGroup/NavGroup';
 
 interface CustomizerState {
-  isCollapse: boolean;
-  isSidebarHover: boolean;
+    isCollapse: boolean;
+    isSidebarHover: boolean;
 }
 
 interface RootState {
-  customizer: CustomizerState;
+    customizer: CustomizerState;
 }
 
-interface SidebarItemBase {
-  id?: string;
-  subheader?: string;
-  children?: SidebarItem[];
+export interface SidebarItemBase {
+    id: string;
+    subheader?: string;
+    title?: string;
+    children?: SidebarItem[];
+    href: string;
+    icon: any;
 }
 
-interface SidebarSubheaderItem extends SidebarItemBase {
-  subheader: string;
+export interface SidebarSubheaderItem extends Omit<SidebarItemBase, 'id'> {
+    id?: string;
+    subheader: string;
 }
 
-interface SidebarCollapseItem extends SidebarItemBase {
-  id: string;
-  children: SidebarItem[];
+// Export this type!
+export interface SidebarCollapseItem extends SidebarItemBase {
+    title: string;
+    children: Array<SidebarCollapseItem | SidebarNavItem>;
 }
 
-interface SidebarNavItem extends SidebarItemBase {
-  id: string;
+// Export this type!
+export interface SidebarNavItem extends SidebarItemBase {
+    title: string;
 }
 
-type SidebarItem = SidebarSubheaderItem | SidebarCollapseItem | SidebarNavItem;
+export type SidebarItem = SidebarSubheaderItem | SidebarCollapseItem | SidebarNavItem;
 
 const SidebarItems = () => {
-  const { pathname } = useLocation();
-  const pathDirect: string = pathname;
-  const pathWithoutLastPart: string = pathname.slice(0, pathname.lastIndexOf('/'));
-  const customizer = useSelector((state: RootState) => state.customizer);
-  const lgUp: boolean = useMediaQuery((theme: Theme) => theme.breakpoints.up('lg'));
-  const hideMenu: boolean | string = lgUp ? customizer.isCollapse && !customizer.isSidebarHover : '';
-  const dispatch = useDispatch();
+    const { pathname } = useLocation();
+    const pathDirect: string = pathname;
+    const pathWithoutLastPart: string = pathname.slice(0, pathname.lastIndexOf('/'));
+    const customizer = useSelector((state: RootState) => state.customizer);
+    const lgUp: boolean = useMediaQuery((theme: Theme) => theme.breakpoints.up('lg'));
 
-  return (
-    <Box sx={{ px: 3 }}>
-      <List sx={{ pt: 0 }} className="sidebarNav">
-        {Menuitems.map((item: SidebarItem) => {
-          // {/********SubHeader**********/}
-          if (item.subheader) {
-            return <NavGroup item={item} hideMenu={hideMenu} key={item.subheader} />;
+    // Fall back to a structural boolean 'false' instead of a empty string ''
+    const hideMenu: boolean = lgUp ? customizer.isCollapse && !customizer.isSidebarHover : false;
+    const dispatch = useDispatch();
 
-            // {/********If Sub Menu**********/}
-            /* eslint no-else-return: "off" */
-          } else if (item.children) {
-            return (
-              <NavCollapse
-                menu={item}
-                pathDirect={pathDirect}
-                hideMenu={hideMenu}
-                pathWithoutLastPart={pathWithoutLastPart}
-                level={1}
-                key={item.id}
-                onClick={() => dispatch(toggleMobileSidebar())}
-              />
-            );
+    return (
+        <Box sx={{ px: 3 }}>
+            <List sx={{ pt: 0 }} className="sidebarNav">
+                {Menuitems.map((item: any) => {
+                    // SubHeader
+                    if (item.subheader) {
+                        return (
+                            <NavGroup
+                                item={item as SidebarSubheaderItem}
+                                hideMenu={hideMenu}
+                                key={item.subheader}
+                            />
+                        );
+                    }
 
-            // {/********If Sub No Menu**********/}
-          } else {
-            return (
-              <NavItem
-                item={item}
-                key={item.id}
-                level={1}
-                pathDirect={pathDirect}
-                hideMenu={hideMenu}
-                onClick={() => dispatch(toggleMobileSidebar())}
-              />
-            );
-          }
-        })}
-      </List>
-    </Box>
-  );
+                    // If Sub Menu (Now outside the comment block trap)
+                    if (item.children) {
+                        return (
+                            <NavCollapse
+                                menu={item as SidebarCollapseItem}
+                                pathDirect={pathDirect}
+                                hideMenu={hideMenu}
+                                pathWithoutLastPart={pathWithoutLastPart}
+                                level={1}
+                                key={item.id}
+                                onClick={() => dispatch(toggleMobileSidebar())}
+                            />
+                        );
+                    }
+
+                    // If Sub No Menu
+                    return (
+                        <NavItem
+                            item={item as SidebarNavItem}
+                            key={item.id}
+                            level={1}
+                            pathDirect={pathDirect}
+                            hideMenu={hideMenu}
+                            onClick={() => dispatch(toggleMobileSidebar())}
+                        />
+                    );
+                })}
+            </List>
+        </Box>
+    );
 };
+
 export default SidebarItems;

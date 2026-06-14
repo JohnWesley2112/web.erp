@@ -7,122 +7,122 @@ import Scrollbar from '../../../components/custom-scroll/Scrollbar';
 import { Profile } from '../sidebar/SidebarProfile/Profile';
 
 const Sidebar = () => {
-  const lgUp = useMediaQuery((theme) => theme.breakpoints.up('lg'));
-  const customizer = useSelector((state: any) => state.customizer);
-  const dispatch = useDispatch();
-  const theme = useTheme();
-  const toggleWidth =
-    customizer.isCollapse && !customizer.isSidebarHover
-      ? customizer.MiniSidebarWidth
-      : customizer.SidebarWidth;
+    const lgUp = useMediaQuery((theme) => theme.breakpoints.up('lg'));
+    const customizer = useSelector((state: any) => state.customizer);
+    const dispatch = useDispatch();
+    const theme = useTheme();
+    const toggleWidth =
+        customizer.isCollapse && !customizer.isSidebarHover
+            ? customizer.MiniSidebarWidth
+            : customizer.SidebarWidth;
 
-  const onHoverEnter = () => {
-    if (customizer.isCollapse) {
-      dispatch(hoverSidebar(true));
+    const onHoverEnter = () => {
+        if (customizer.isCollapse) {
+            dispatch(hoverSidebar(true));
+        }
+    };
+
+    const onHoverLeave = () => {
+        dispatch(hoverSidebar(false));
+    };
+
+    if (lgUp) {
+        return (
+            <Box
+                sx={{
+                    width: toggleWidth,
+                    flexShrink: 0,
+                    ...(customizer.isCollapse && {
+                        position: 'absolute',
+                    }),
+                }}
+            >
+                {/* ------------------------------------------- */}
+                {/* Sidebar for desktop */}
+                {/* ------------------------------------------- */}
+                <Drawer
+                    anchor="left"
+                    open
+                    onMouseEnter={onHoverEnter}
+                    onMouseLeave={onHoverLeave}
+                    variant="permanent"
+                    slotProps={{
+                        paper: {
+                            sx: {
+                                transition: theme.transitions.create('width', {
+                                    duration: theme.transitions.duration.shortest,
+                                }),
+                                width: toggleWidth,
+                                boxSizing: 'border-box',
+                            },
+                        },
+                    }}
+                >
+                    {/* ------------------------------------------- */}
+                    {/* Sidebar Box */}
+                    {/* ------------------------------------------- */}
+                    <Box
+                        sx={{
+                            backgroundColor:
+                                customizer.activeSidebarBg === '#ffffff' && customizer.activeMode === 'dark'
+                                    ? customizer.darkBackground900
+                                    : customizer.activeSidebarBg,
+                            color: customizer.activeSidebarBg === '#ffffff' ? '' : 'white',
+                            height: '100%',
+                        }}
+                    >
+                        {/* ------------------------------------------- */}
+                        {/* Logo */}
+                        {/* ------------------------------------------- */}
+                        <Box sx={{ px: 3 }}>
+                            <Logo />
+                        </Box>
+                        <Scrollbar sx={{ height: 'calc(100% - 190px)' }}>
+                            {/* ------------------------------------------- */}
+                            {/* Sidebar Items */}
+                            {/* ------------------------------------------- */}
+                            <SidebarItems />
+                        </Scrollbar>
+                        <Profile />
+                    </Box>
+                </Drawer>
+            </Box>
+        );
     }
-  };
 
-  const onHoverLeave = () => {
-    dispatch(hoverSidebar(false));
-  };
-
-  if (lgUp) {
     return (
-      <Box
-        sx={{
-          width: toggleWidth,
-          flexShrink: 0,
-          ...(customizer.isCollapse && {
-            position: 'absolute',
-          }),
-        }}
-      >
-        {/* ------------------------------------------- */}
-        {/* Sidebar for desktop */}
-        {/* ------------------------------------------- */}
         <Drawer
-          anchor="left"
-          open
-          onMouseEnter={onHoverEnter}
-          onMouseLeave={onHoverLeave}
-          variant="permanent"
-          slotProps={{
-            paper: {
-              sx: {
-                transition: theme.transitions.create('width', {
-                  duration: theme.transitions.duration.shortest,
-                }),
-                width: toggleWidth,
-                boxSizing: 'border-box',
-              },
-            },
-          }}
-        >
-          {/* ------------------------------------------- */}
-          {/* Sidebar Box */}
-          {/* ------------------------------------------- */}
-          <Box
-            sx={{
-              backgroundColor:
-                customizer.activeSidebarBg === '#ffffff' && customizer.activeMode === 'dark'
-                  ? customizer.darkBackground900
-                  : customizer.activeSidebarBg,
-              color: customizer.activeSidebarBg === '#ffffff' ? '' : 'white',
-              height: '100%',
+            anchor="left"
+            open={customizer.isMobileSidebar}
+            onClose={() => dispatch(toggleMobileSidebar())}
+            variant="temporary"
+            slotProps={{
+                paper: {
+                    sx: {
+                        width: customizer.SidebarWidth,
+                        backgroundColor:
+                            customizer.activeMode === 'dark'
+                                ? customizer.darkBackground900
+                                : customizer.activeSidebarBg,
+                        color: customizer.activeSidebarBg === '#ffffff' ? '' : 'white',
+                        border: '0 !important',
+                        boxShadow: (theme) => theme.shadows[8],
+                    },
+                },
             }}
-          >
+        >
             {/* ------------------------------------------- */}
             {/* Logo */}
             {/* ------------------------------------------- */}
-            <Box sx={{ px: 3 }}>
-              <Logo />
+            <Box sx={{ px: 2 }}>
+                <Logo />
             </Box>
-            <Scrollbar sx={{ height: 'calc(100% - 190px)' }}>
-              {/* ------------------------------------------- */}
-              {/* Sidebar Items */}
-              {/* ------------------------------------------- */}
-              <SidebarItems />
-            </Scrollbar>
-            <Profile />
-          </Box>
+            {/* ------------------------------------------- */}
+            {/* Sidebar For Mobile */}
+            {/* ------------------------------------------- */}
+            <SidebarItems />
         </Drawer>
-      </Box>
     );
-  }
-
-  return (
-    <Drawer
-      anchor="left"
-      open={customizer.isMobileSidebar}
-      onClose={() => dispatch(toggleMobileSidebar())}
-      variant="temporary"
-      slotProps={{
-        paper: {
-          sx: {
-            width: customizer.SidebarWidth,
-            backgroundColor:
-              customizer.activeMode === 'dark'
-                ? customizer.darkBackground900
-                : customizer.activeSidebarBg,
-            color: customizer.activeSidebarBg === '#ffffff' ? '' : 'white',
-            border: '0 !important',
-            boxShadow: (theme) => theme.shadows[8],
-          },
-        },
-      }}
-    >
-      {/* ------------------------------------------- */}
-      {/* Logo */}
-      {/* ------------------------------------------- */}
-      <Box sx={{ px: 2 }}>
-        <Logo />
-      </Box>
-      {/* ------------------------------------------- */}
-      {/* Sidebar For Mobile */}
-      {/* ------------------------------------------- */}
-      <SidebarItems />
-    </Drawer>
-  );
 };
 
 export default Sidebar;
