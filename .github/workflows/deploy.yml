@@ -73,4 +73,4 @@ jobs:
                       systemctl reload nginx
 
             - name: Deployment Complete
-              run: echo "🚀 Deployment completed successfully."
+              run: echo "Deployment completed successfully."
