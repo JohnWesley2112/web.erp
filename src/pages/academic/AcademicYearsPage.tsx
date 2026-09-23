@@ -1,0 +1,3 @@
+import SimpleAcademicResourcePage from "./SimpleAcademicResourcePage";
+import { academicYearApi, type AcademicYear } from "../../api/helpers/academic-year-api/academic-year-api.helper";
+export default function AcademicYearsPage() { return <SimpleAcademicResourcePage<AcademicYear> title="Academic Years" singular="Academic Year" description="Manage academic year periods" list={academicYearApi.list} create={academicYearApi.create} update={academicYearApi.update} fields={[{ key: "name", label: "Name" }, { key: "startDate", label: "Start date", type: "date" }, { key: "endDate", label: "End date", type: "date" }, { key: "status", label: "Status", type: "select", options: ["UPCOMING", "ACTIVE", "CLOSED"] }]} />; }

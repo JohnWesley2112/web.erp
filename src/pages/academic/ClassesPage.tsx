@@ -1,0 +1,3 @@
+import SimpleAcademicResourcePage from "./SimpleAcademicResourcePage";
+import { classApi, type AcademicClass } from "../../api/helpers/class-api/class-api.helper";
+export default function ClassesPage() { return <SimpleAcademicResourcePage<AcademicClass> title="Classes" singular="Class" description="Manage class definitions" list={classApi.list} create={classApi.create} update={classApi.update} fields={[{ key: "name", label: "Name" }, { key: "code", label: "Code" }, { key: "displayOrder", label: "Display order", type: "number" }, { key: "status", label: "Status", type: "select", options: ["ACTIVE", "INACTIVE"] }]} />; }

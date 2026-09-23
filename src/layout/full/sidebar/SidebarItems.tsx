@@ -6,6 +6,7 @@ import { toggleMobileSidebar } from '../../../store/customizer/CustomizerSlice';
 import NavItem from './NavItem';
 import NavCollapse from './NavCollapse';
 import NavGroup from './NavGroup/NavGroup';
+import { hasPermission } from '../../../utils/permissions';
 
 interface CustomizerState {
     isCollapse: boolean;
@@ -48,17 +49,41 @@ const SidebarItems = () => {
     const pathDirect: string = pathname;
     const pathWithoutLastPart: string = pathname.slice(0, pathname.lastIndexOf('/'));
     const customizer = useSelector((state: RootState) => state.customizer);
+    const permissions = useSelector((state: any) => state.permissions.permissions ?? []);
     const lgUp: boolean = useMediaQuery((theme: Theme) => theme.breakpoints.up('lg'));
-
-    // Fall back to a structural boolean 'false' instead of a empty string ''
     const hideMenu: boolean = lgUp ? customizer.isCollapse && !customizer.isSidebarHover : false;
     const dispatch = useDispatch();
+
+    const filterMenu = (items: any[]) => items.reduce((acc: any[], item) => {
+        if (item.navlabel) {
+            const visibleChildren = item.children ? filterMenu(item.children) : [];
+            if (visibleChildren.length > 0) {
+                acc.push({ ...item, children: visibleChildren });
+            }
+            return acc;
+        }
+
+        if (item.children) {
+            const visibleChildren = filterMenu(item.children);
+            if (visibleChildren.length > 0 || hasPermission(permissions, item.requiredPermissions?.[0])) {
+                acc.push({ ...item, children: visibleChildren });
+            }
+            return acc;
+        }
+
+        if (hasPermission(permissions, item.requiredPermissions?.[0])) {
+            acc.push(item);
+        }
+
+        return acc;
+    }, []);
+
+    const menuItems = filterMenu(Menuitems as any[]);
 
     return (
         <Box sx={{ px: 3 }}>
             <List sx={{ pt: 0 }} className="sidebarNav">
-                {Menuitems.map((item: any) => {
-                    // SubHeader
+                {menuItems.map((item: any) => {
                     if (item.subheader) {
                         return (
                             <NavGroup
@@ -69,7 +94,6 @@ const SidebarItems = () => {
                         );
                     }
 
-                    // If Sub Menu (Now outside the comment block trap)
                     if (item.children) {
                         return (
                             <NavCollapse
@@ -84,7 +108,6 @@ const SidebarItems = () => {
                         );
                     }
 
-                    // If Sub No Menu
                     return (
                         <NavItem
                             item={item as SidebarNavItem}
